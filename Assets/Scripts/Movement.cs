@@ -6,7 +6,7 @@ public class Movement : MonoBehaviour
     [SerializeField] private float maxSpeed = 5f;
     [SerializeField] private float acceleration = 30f;
     [SerializeField] private float deceleration = 2f;
-    [SerializeField] private float minMovementThreshold = 0.1f; 
+    [SerializeField] private float minMovementThreshold = 0.1f;
 
     private Vector2 movement;
     private Vector2 currentVelocity;
@@ -34,10 +34,6 @@ public class Movement : MonoBehaviour
         }
 
         isMoving = movement.magnitude > 0;
-    }
-    public void UpdateSpeed(float newSpeed)
-    {
-        maxSpeed = newSpeed;
     }
 
     private void FixedUpdate()
@@ -70,6 +66,7 @@ public class Movement : MonoBehaviour
 
         rb.velocity = currentVelocity;
     }
+
     void OnGUI()
     {
         GUILayout.Label($"Speed: {currentVelocity.magnitude:F2}");

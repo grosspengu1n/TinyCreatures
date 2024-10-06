@@ -1,34 +1,38 @@
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
-
 public class MarketManager : MonoBehaviour
 {
     [Header("Player References")]
     public Movement playerMovement;
-
     [Header("UI Elements")]
     public GameObject upgradeMenu;
     public Button speedUpgradeButton;
     public TextMeshProUGUI currentSpeedText;
     public TextMeshProUGUI upgradeCostText;
+    public TextMeshProUGUI currencyText;
 
-    [Header("Upgrade Settings")]
-    public float baseSpeed = 5f;
-    public float speedIncreasePerUpgrade = 1f;
-    public int baseCost = 100;
-    public float costMultiplier = 1.5f;
-
-    private int currentUpgradeLevel = 0;
-    private int currentCost;
     private float timeScaleBeforePause;
+
 
     void Start()
     {
-        currentCost = baseCost;
         UpdateUI();
+        speedUpgradeButton.onClick.AddListener(() => PurchaseUpgrade("Speed"));
+        GameManager.Instance.OnCurrencyChanged += UpdateCurrencyUI;
+        GameManager.Instance.OnUpgradeChanged += OnUpgradeChanged;
+        GameManager.Instance.OnGameLoaded += OnGameLoaded;
+        ApplyCurrentSpeed();
+    }
 
-        speedUpgradeButton.onClick.AddListener(PurchaseSpeedUpgrade);
+    void OnDestroy()
+    {
+        if (GameManager.Instance != null)
+        {
+            GameManager.Instance.OnCurrencyChanged -= UpdateCurrencyUI;
+            GameManager.Instance.OnUpgradeChanged -= OnUpgradeChanged;
+            GameManager.Instance.OnGameLoaded -= OnGameLoaded;
+        }
     }
 
     void Update()
@@ -46,53 +50,76 @@ public class MarketManager : MonoBehaviour
 
         if (isOpening)
         {
+            if (playerMovement != null)
+            {
+                playerMovement.enabled = false;
+            }
             timeScaleBeforePause = Time.timeScale;
             Time.timeScale = 0f;
+            UpdateUI();
         }
         else
         {
+            if (playerMovement != null)
+            {
+                playerMovement.enabled = true;
+            }
             Time.timeScale = timeScaleBeforePause;
         }
     }
-
-    public void PurchaseSpeedUpgrade()
+    public void PurchaseUpgrade(string upgradeName)
     {
-        if (CanAffordUpgrade(currentCost))
+        if (GameManager.Instance.TryPurchaseUpgrade(upgradeName))
         {
-            DeductCurrency(currentCost);
-
-            currentUpgradeLevel++;
-            float newSpeed = baseSpeed + (speedIncreasePerUpgrade * currentUpgradeLevel);
-            playerMovement.UpdateSpeed(newSpeed);
-
-            currentCost = Mathf.RoundToInt(baseCost * Mathf.Pow(costMultiplier, currentUpgradeLevel));
-
+            if (upgradeName == "Speed")
+            {
+                ApplyCurrentSpeed();
+            }
             UpdateUI();
         }
     }
-
     private void UpdateUI()
     {
-        float currentSpeed = baseSpeed + (speedIncreasePerUpgrade * currentUpgradeLevel);
+        UpdateCurrencyUI(GameManager.Instance.currency);
+        UpdateSpeedUI();
+    }
+    private void UpdateCurrencyUI(int currency)
+    {
+        currencyText.text = $"Currency: {currency}";
+    }
+    private void UpdateSpeedUI()
+    {
+        float currentSpeed = GameManager.Instance.GetUpgradeValue("Speed");
+        int nextCost = GameManager.Instance.GetUpgradeNextCost("Speed");
         currentSpeedText.text = $"Current Speed: {currentSpeed:F1}";
-        upgradeCostText.text = $"Upgrade Cost: {currentCost}";
+        upgradeCostText.text = $"Upgrade Cost: {nextCost}";
     }
-
-    private bool CanAffordUpgrade(int amount)
+    private void OnUpgradeChanged(string upgradeName)
     {
-        if (GameManager.Instance.currency >= amount)
+        if (upgradeName == "Speed")
         {
-            return true;
-        }
-        else
-        {
-            return false;
+            UpdateSpeedUI();
         }
     }
-
-    private void DeductCurrency(int amount)
+    private void ApplyCurrentSpeed()
     {
-        GameManager.Instance.currency -= amount;
+        float currentSpeed = GameManager.Instance.GetUpgradeValue("Speed");
+        playerMovement.UpdateSpeed(currentSpeed);
+    }
+    public void ResetUpgrades()
+    {
+        if (GameManager.Instance != null)
+        {
+            GameManager.Instance.DeleteSaveFile();
+            GameManager.Instance.InitializeUpgrades();
+            ApplyCurrentSpeed();
+            UpdateUI();
+        }
+    }
+    private void OnGameLoaded()
+    {
+        Debug.Log("Game loaded - updating market manager");
+        UpdateUI();
+        ApplyCurrentSpeed();
     }
 }
-

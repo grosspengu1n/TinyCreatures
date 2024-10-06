@@ -44,6 +44,7 @@ public class GameManager : MonoBehaviour
 
     public event Action<int> OnCurrencyChanged;
     public event Action<string> OnUpgradeChanged;
+    public event Action OnGameLoaded;
 
     private string SavePath => Path.Combine(Application.persistentDataPath, "gamesave.json");
 
@@ -61,7 +62,7 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    private void InitializeUpgrades()
+    public void InitializeUpgrades()
     {
         if (upgrades.Count == 0)
         {
@@ -125,7 +126,7 @@ public class GameManager : MonoBehaviour
         return upgrade?.NextUpgradeCost ?? 0;
     }
 
-    private void SaveGame()
+    public void SaveGame()
     {
         SaveData saveData = new SaveData
         {
@@ -150,7 +151,7 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    private void LoadGame()
+    public void LoadGame()
     {
         try
         {
@@ -170,6 +171,14 @@ public class GameManager : MonoBehaviour
                     }
                 }
 
+                OnCurrencyChanged?.Invoke(currency);
+                foreach (var upgrade in upgrades)
+                {
+                    OnUpgradeChanged?.Invoke(upgrade.name);
+                }
+
+                OnGameLoaded?.Invoke();
+
                 Debug.Log($"Game loaded successfully from {SavePath}");
             }
             else
@@ -180,6 +189,7 @@ public class GameManager : MonoBehaviour
         catch (Exception e)
         {
             Debug.LogError($"Failed to load game: {e.Message}");
+            throw;
         }
     }
 

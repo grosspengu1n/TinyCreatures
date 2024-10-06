@@ -18,9 +18,14 @@ public class PauseMenu : MonoBehaviour
 
     private bool isPaused = false;
     private float timeScaleBeforePause;
+    private Transform player;
+    private Movement playerMovement;
 
     void Start()
     {
+        player = GameObject.FindGameObjectWithTag("Player").transform;
+        playerMovement= player.GetComponent<Movement>();
+
         pauseMenuUI.SetActive(false);
 
         resumeButton.onClick.AddListener(Resume);
@@ -59,6 +64,11 @@ public class PauseMenu : MonoBehaviour
         Time.timeScale = 0f;
         pauseMenuUI.SetActive(true);
         UpdateStatsDisplay();
+
+        if (playerMovement != null)
+        {
+            playerMovement.enabled = false;
+        }
     }
 
     void Resume()
@@ -66,6 +76,11 @@ public class PauseMenu : MonoBehaviour
         Time.timeScale = timeScaleBeforePause;
         pauseMenuUI.SetActive(false);
         isPaused = false;
+
+        if (playerMovement != null)
+        {
+            playerMovement.enabled = true;
+        }
     }
 
     void SaveGame()

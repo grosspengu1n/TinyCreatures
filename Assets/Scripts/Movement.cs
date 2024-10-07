@@ -12,12 +12,31 @@ public class Movement : MonoBehaviour
     private Vector2 currentVelocity;
     private bool isMoving;
     private Rigidbody2D rb;
-    private SpriteRenderer spriteRenderer;
 
+    public Animator body;
+    public Animator head;
+    public Animator tail;
+    public Animator belly;
+    public Animator wings;
+    public Animator legs;
+    public Animator stinger;
+    public SpriteRenderer bodySprite;
+    public SpriteRenderer headSprite;
+    public SpriteRenderer tailSprite;
+    public SpriteRenderer bellySprite;
+    public SpriteRenderer wingsSprite;
+    public SpriteRenderer legsSprite;
+    public SpriteRenderer stingerSprite;
+    public string upgradeBody;
+    public string upgradeTail;
+    public string upgradeWings;
+    public string upgradeStinger;
+    private string lastDir = null;
+
+    public string state;
     private void Start()
     {
         rb = GetComponent<Rigidbody2D>();
-        spriteRenderer = GetComponent<SpriteRenderer>();
         rb.gravityScale = 0f;
         rb.drag = 0f;
     }
@@ -30,9 +49,92 @@ public class Movement : MonoBehaviour
 
         if (movement.x != 0)
         {
-            spriteRenderer.flipX = movement.x < 0;
-        }
+            if (movement.x < 0)
+            {
+                lastDir = "left";
+            }
+            if (movement.x > 0)
+            {
+                lastDir = "right";
+            }
+            
+            /*if (movement.x < 0) 
+            {
+                float time = Map(currentVelocity.x, maxSpeed, -maxSpeed, 0, 1, true);
+                legs.Play("S_FlyTransition_Legs", 0, time);
+            }*/
+            /*if (movement.x > 0)
+            {
+                float time = Map(currentVelocity.x, -maxSpeed, maxSpeed, 0, 1, true);
+                legs.Play("S_FlyTransition_Legs", 0, time);
+            }*/
 
+            //animator.Play(upgradePart+"View_State_Part")
+            stinger.Play(upgradeStinger+"S_N_Stinger");
+            legs.Play("S_Fly_Legs");
+            wings.Play(upgradeWings+"S_N_Wings");
+            belly.Play("S_N_Belly");
+            tail.Play(upgradeTail+"S_N_Tail");
+            head.Play("S_N_Head");
+            body.Play(upgradeBody+"S_N_Body");
+            stingerSprite.flipX = movement.x < 0;
+            legsSprite.flipX = movement.x < 0;
+            wingsSprite.flipX = movement.x < 0;
+            bellySprite.flipX = movement.x < 0;
+            tailSprite.flipX = movement.x < 0;
+            headSprite.flipX = movement.x < 0;
+            bodySprite.flipX = movement.x < 0;
+            //Now have to check for upgrade parts
+            //and set transitions, by mapping?
+            //AND check for the bloodbelly
+        }
+        if (movement.y != 0 && movement.x==0)
+        {
+
+            if (movement.y > 0)
+            {
+                lastDir = "back";
+                stinger.Play(upgradeStinger + "B_N_Stinger");
+                legs.Play("B_Fly_Legs");
+                wings.Play(upgradeWings + "B_N_Wings");
+                belly.Play("B_N_MidBelly");
+                //have to make this invisible when low on blood, need an empty sprite
+                tail.Play(upgradeTail + "B_N_Tail");
+                head.Play("B_N_Head");
+                body.Play(upgradeBody + "B_N_Body");
+            }
+            if (movement.y < 0)
+            {
+                lastDir = "front";
+                stinger.Play(upgradeStinger + "F_N_Stinger");
+                legs.Play("F_Fly_Legs");
+                wings.Play(upgradeWings + "F_N_Wings");
+                belly.Play("F_N_MidBelly");
+                //have to make this invisible when low on blood, need an empty sprite
+                tail.Play(upgradeTail + "F_N_Tail");
+                head.Play("F_N_Head");
+                body.Play(upgradeBody + "F_N_Body");
+            }
+        }
+        else if (movement.y == 0 && movement.x == 0)
+        {
+            if (lastDir == "left")
+            {
+                legs.Play("S_N_Legs");
+            }
+            if (lastDir == "right")
+            {
+                legs.Play("S_N_Legs");
+            }
+            if (lastDir == "front")
+            {
+                legs.Play("F_N_Legs");
+            }
+            if (lastDir == "back")
+            {
+                legs.Play("B_N_Legs");
+            }
+        }
         isMoving = movement.magnitude > 0;
     }
     public void UpdateSpeed(float newSpeed)
@@ -42,7 +144,11 @@ public class Movement : MonoBehaviour
 
     private void FixedUpdate()
     {
-        Move();
+        if (state!= "stuck" || state!= "hypno")
+        {
+            Move();
+        }
+
     }
 
     private void Move()
@@ -73,6 +179,13 @@ public class Movement : MonoBehaviour
     void OnGUI()
     {
         GUILayout.Label($"Speed: {currentVelocity.magnitude:F2}");
+    }
+
+    public static float Map(float value, float min1, float max1, float min2, float max2, bool clamp = false)
+    {
+        float val = min2 + (max2 - min2) * ((value - min1) / (max1 - min1));
+
+        return clamp ? Mathf.Clamp(val, Mathf.Min(min2, max2), Mathf.Max(min2, max2)) : val;
     }
 }
 

@@ -4,8 +4,7 @@ using UnityEngine;
 
 public class UVLight : MonoBehaviour
 {
-    public Collider2D pullCol;
-
+    public int trapStrength;
     public GameObject killbox;
 
     private void OnCollisionEnter2D(Collision2D collision)
@@ -15,7 +14,9 @@ public class UVLight : MonoBehaviour
             if (collision.gameObject.GetComponent<Struggle>().vulnerable)
             {
                 collision.gameObject.GetComponent<Struggle>().currentTrap = killbox;
+                collision.gameObject.GetComponent<Struggle>().currentTrapStrength = trapStrength;
                 collision.gameObject.GetComponent<Struggle>().caught = true;
+                
             }
 
         }

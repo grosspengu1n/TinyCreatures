@@ -38,12 +38,14 @@ public class SkillCheckGame : MonoBehaviour
     private float lineMaxX;
     private Vector3 checkbarCenter;
 
+    private bool alert;
+    public float riseSpeed;
     private void Start()
     {
         InitializeCheckbar();
         InitializePlayerPositions();
         InitializeUI();
-        StartCoroutine(HandRoutine());
+        StartCoroutine(HandRise());
     }
 
     private void InitializeCheckbar()
@@ -196,6 +198,24 @@ public class SkillCheckGame : MonoBehaviour
         }
     }
 
+    private IEnumerator HandRise()
+    {
+        if (!alert)
+        {
+            hand.position += new Vector3(0,riseSpeed * Time.deltaTime,0);
+            if (hand.position == handStartPosition)
+            {
+                StartCoroutine(HandRoutine());
+                yield return null;
+            }
+        }
+        if (alert)
+        {
+            StartCoroutine(HandRoutine());
+            yield return null;
+        }
+       
+    }
     private IEnumerator HandRoutine()
     {
         while (true)

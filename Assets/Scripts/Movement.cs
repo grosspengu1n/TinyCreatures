@@ -34,6 +34,9 @@ public class Movement : MonoBehaviour
     private string lastDir = null;
 
     public string state;
+    public GameObject interactIcon;
+    public bool nearTV, nearLair;
+    public GameObject feedScreen, upgradeScreen;
     private void Start()
     {
         rb = GetComponent<Rigidbody2D>();
@@ -136,6 +139,22 @@ public class Movement : MonoBehaviour
             }
         }
         isMoving = movement.magnitude > 0;
+
+        if (nearLair)
+        {
+            if (Input.GetKey("Space"))
+            {
+
+            }
+        }
+
+        if (nearTV)
+        {
+            if (Input.GetKey("Space"))
+            {
+                upgradeScreen.SetActive(true);
+            }
+        }
     }
     public void UpdateSpeed(float newSpeed)
     {
@@ -144,7 +163,7 @@ public class Movement : MonoBehaviour
 
     private void FixedUpdate()
     {
-        if (state!= "stuck" || state!= "hypno")
+        if (state!= "stuck" || state!= "hypno" || state!= "locked")
         {
             Move();
         }
@@ -186,6 +205,23 @@ public class Movement : MonoBehaviour
         float val = min2 + (max2 - min2) * ((value - min1) / (max1 - min1));
 
         return clamp ? Mathf.Clamp(val, Mathf.Min(min2, max2), Mathf.Max(min2, max2)) : val;
+    }
+
+    private void OnTriggerEnter2D(Collider2D other)
+    {
+        if (other.CompareTag("TV"))
+        {
+            interactIcon.SetActive(true);
+            nearTV = true;
+        }
+    }
+    private void OnTriggerExit2D(Collider2D other)
+    {
+        if (other.CompareTag("TV"))
+        {
+            interactIcon.SetActive(false);
+            nearTV = false;
+        }
     }
 }
 

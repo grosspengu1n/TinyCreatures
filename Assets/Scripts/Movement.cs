@@ -31,6 +31,7 @@ public class Movement : MonoBehaviour
     public string upgradeTail;
     public string upgradeWings;
     public string upgradeStinger;
+    public string stateBelly;
     private string lastDir = null;
 
     public string state;
@@ -42,6 +43,11 @@ public class Movement : MonoBehaviour
         rb = GetComponent<Rigidbody2D>();
         rb.gravityScale = 0f;
         rb.drag = 0f;
+        upgradeBody = "neutral";
+        upgradeTail = "neutral";
+        upgradeWings = "neutral";
+        upgradeStinger = "neutral";
+        stateBelly = "skinny";
     }
 
     private void Update()
@@ -61,25 +67,13 @@ public class Movement : MonoBehaviour
                 lastDir = "right";
             }
             
-            /*if (movement.x < 0) 
-            {
-                float time = Map(currentVelocity.x, maxSpeed, -maxSpeed, 0, 1, true);
-                legs.Play("S_FlyTransition_Legs", 0, time);
-            }*/
-            /*if (movement.x > 0)
-            {
-                float time = Map(currentVelocity.x, -maxSpeed, maxSpeed, 0, 1, true);
-                legs.Play("S_FlyTransition_Legs", 0, time);
-            }*/
-
-            //animator.Play(upgradePart+"View_State_Part")
-            stinger.Play(upgradeStinger+"S_N_Stinger");
-            legs.Play("S_Fly_Legs");
-            wings.Play(upgradeWings+"S_N_Wings");
-            belly.Play("S_N_Belly");
-            tail.Play(upgradeTail+"S_N_Tail");
-            head.Play("S_N_Head");
-            body.Play(upgradeBody+"S_N_Body");
+            stinger.Play(upgradeStinger+"_E_stinger_idle");
+            legs.Play("neutral_E_legs_fly");
+            wings.Play(upgradeWings+"_E_wings_idle");
+            belly.Play(stateBelly+"_E_belly_idle");
+            tail.Play(upgradeTail+"_E_tail_idle");
+            head.Play("neutral_E_head_idle");
+            body.Play(upgradeBody+"_E_body_idle");
             stingerSprite.flipX = movement.x < 0;
             legsSprite.flipX = movement.x < 0;
             wingsSprite.flipX = movement.x < 0;
@@ -87,8 +81,9 @@ public class Movement : MonoBehaviour
             tailSprite.flipX = movement.x < 0;
             headSprite.flipX = movement.x < 0;
             bodySprite.flipX = movement.x < 0;
-            //Now have to check for upgrade parts
-            //and set transitions, by mapping?
+
+            //upgrade string has to be set as selected upgrade from upgrade script, respecting animation naming conventions
+            //and set transitions, by mapping or animator
             //AND check for the bloodbelly
         }
         if (movement.y != 0 && movement.x==0)
@@ -97,45 +92,45 @@ public class Movement : MonoBehaviour
             if (movement.y > 0)
             {
                 lastDir = "back";
-                stinger.Play(upgradeStinger + "B_N_Stinger");
-                legs.Play("B_Fly_Legs");
-                wings.Play(upgradeWings + "B_N_Wings");
-                belly.Play("B_N_MidBelly");
+                stinger.Play(upgradeStinger + "_N_stinger_idle");
+                legs.Play("neutral_N_legs_fly");
+                wings.Play(upgradeWings + "_N_wings_idle");
+                belly.Play(/*stateBelly+*/"mid"+"_N_belly_idle");
                 //have to make this invisible when low on blood, need an empty sprite
-                tail.Play(upgradeTail + "B_N_Tail");
-                head.Play("B_N_Head");
-                body.Play(upgradeBody + "B_N_Body");
+                tail.Play(upgradeTail + "_N_tail_idle");
+                head.Play("neutral_N_head_idle");
+                body.Play(upgradeBody + "_N_body_idle");
             }
             if (movement.y < 0)
             {
                 lastDir = "front";
-                stinger.Play(upgradeStinger + "F_N_Stinger");
-                legs.Play("F_Fly_Legs");
-                wings.Play(upgradeWings + "F_N_Wings");
-                belly.Play("F_N_MidBelly");
+                stinger.Play(upgradeStinger + "_S_stinger_idle");
+                legs.Play("neutral_S_legs_fly");
+                wings.Play(upgradeWings + "_S_wings_idle");
+                belly.Play(/*stateBelly+*/"mid" + "_S_belly_idle");
                 //have to make this invisible when low on blood, need an empty sprite
-                tail.Play(upgradeTail + "F_N_Tail");
-                head.Play("F_N_Head");
-                body.Play(upgradeBody + "F_N_Body");
+                tail.Play(upgradeTail + "_S_tail_idle");
+                head.Play("neutral_S_head_idle");
+                body.Play(upgradeBody + "_S_body_idle");
             }
         }
         else if (movement.y == 0 && movement.x == 0)
         {
             if (lastDir == "left")
             {
-                legs.Play("S_N_Legs");
+                legs.Play("neutral_E_legs_idle");
             }
             if (lastDir == "right")
             {
-                legs.Play("S_N_Legs");
+                legs.Play("neutral_E_legs_idle");
             }
             if (lastDir == "front")
             {
-                legs.Play("F_N_Legs");
+                legs.Play("neutral_S_legs_idle");
             }
             if (lastDir == "back")
             {
-                legs.Play("B_N_Legs");
+                legs.Play("neutral_N_legs_idle");
             }
         }
         isMoving = movement.magnitude > 0;
